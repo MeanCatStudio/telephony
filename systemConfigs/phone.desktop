@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name=Phone
+Comment=Enables voice calls through modem
+Exec=/usr/bin/python3 /home/igotmeancat/Documents/telephony/phone/phone.py
+Icon=/home/igotmeancat/Documents/telephony/phone/phone.png
+Categories=Network;Internet;
+StartpNotify=true

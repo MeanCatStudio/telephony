@@ -1,0 +1,168 @@
+{
+    "calls": {
+        "history": [
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-04T18:44:24",
+                "out": false,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-04T18:45:03",
+                "out": false,
+                "answered": false
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-04T19:08:59",
+                "out": false,
+                "answered": false
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-04T19:13:14",
+                "out": false,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-04T19:21:33",
+                "out": false,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-04T19:23:26",
+                "out": true,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-04T19:23:55",
+                "out": false,
+                "answered": true
+            },
+            {
+                "number": "14163193021",
+                "timestamp": "2026-07-04T20:37:25",
+                "out": true,
+                "answered": true
+            },
+            {
+                "number": "14163193021",
+                "timestamp": "2026-07-04T20:38:25",
+                "out": false,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T17:38:36",
+                "out": false,
+                "answered": false
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T17:39:03",
+                "out": false,
+                "answered": false
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T17:39:09",
+                "out": false,
+                "answered": false
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T17:42:35",
+                "out": false,
+                "answered": false
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T18:40:18",
+                "out": false,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T18:41:21",
+                "out": false,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T19:34:11",
+                "out": true,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T19:36:42",
+                "out": true,
+                "answered": true
+            },
+            {
+                "number": "14373293493",
+                "timestamp": "2026-07-08T19:40:59",
+                "out": true,
+                "answered": true
+            }
+        ]
+    },
+    "texts": {
+        "messages": {
+            "14373293493": [
+                {
+                    "number": "14373293493",
+                    "text": "Yel",
+                    "timestamp": "2026-07-04T11:47:00-04",
+                    "sent": false,
+                    "read": false
+                },
+                {
+                    "number": "14373293493",
+                    "text": "K",
+                    "timestamp": "2026-07-08T17:13:13-04",
+                    "sent": false,
+                    "read": true
+                },
+                {
+                    "number": "14373293493",
+                    "text": "K",
+                    "timestamp": "2026-07-08T17:13:13-04",
+                    "sent": false,
+                    "read": true
+                },
+                {
+                    "number": "14373293493",
+                    "text": "no",
+                    "timestamp": "2026-07-08T18:48:55",
+                    "sent": true,
+                    "read": true
+                }
+            ],
+            "14163193021": [],
+            "78487": [
+                {
+                    "number": "78487",
+                    "text": "Moores: Up to 50% off deals are on now. Save big on shirts, shorts, & more! Online only, stores closed 7/1.\n\nhttps://i.mooresclothing.ca/8jnSK\n\nSTOP2quit",
+                    "timestamp": "2026-07-01T09:08:37-04",
+                    "sent": false,
+                    "read": false
+                }
+            ]
+        }
+    },
+    "contacts": {
+        "14373293493": {
+            "number": "14373293493",
+            "name": "me"
+        },
+        "14163193021": {
+            "number": "14163193021",
+            "name": "daddy"
+        }
+    }
+}

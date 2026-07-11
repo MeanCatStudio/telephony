@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name=Messages
+Comment=Send and Recieve SMS messages
+Exec=/usr/bin/python3 /home/igotmeancat/Documents/telephony/messages/messages.py
+Icon=/home/igotmeancat/Documents/telephony/messages/messages.png
+Categories=Network;Internet;
+StartpNotify=true

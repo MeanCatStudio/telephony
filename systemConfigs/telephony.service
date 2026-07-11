@@ -1,0 +1,16 @@
+[Unit]
+Description=Centeral API for modem functions
+
+[Service]
+WorkingDirectory=/home/igotmeancat/Documents/telephony
+ExecStart=/usr/bin/python3 /home/igotmeancat/Documents/telephony/telephony.py
+
+Restart=always
+RestartSec=5
+
+# Logs
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
