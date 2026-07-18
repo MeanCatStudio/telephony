@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 from time import sleep
 import dbus
 import dbus.mainloop.glib
@@ -85,6 +86,14 @@ canvas.pack(side='left', fill='both')
 history = json.loads(interface.GetCallHistory(1, DEFAULT_HISTORYS_LOAD))
 contacts = json.loads(interface.GetContacts())
 
+def SetTitleOnState(state):
+	root.title("Messages" if state == "cconnected" else "Messages - NOT CONNECTED")
+SetTitleOnState(interface.GetStatus())
+bus.add_signal_receiver(
+	SetTitleOnState,
+	signal_name="OnStateChange",
+	dbus_interface="usr.telephony")
+
 def FormateTime(time):
 	age = datetime.now() - time
 	if age.days < 1:
@@ -93,6 +102,18 @@ def FormateTime(time):
 		return f"Yesterday"
 	else:
 		return f"{time:%Y-%m-%d}"
+		
+def Call(number):
+	try:
+		success, message = interface.MakeCall(number)
+		callingNumber = number
+	except dbus.exceptions.DBusException as e:
+		success = False
+		message = f"{e}"
+		
+	if not success:
+		messagebox.showwarning("!!!", f"Failed to send message. \nError: {message}")
+	return success
 
 def CreateHistoryBlock(call):
 	contact = contacts[call['number']]
@@ -101,10 +122,8 @@ def CreateHistoryBlock(call):
 	text = f"{'To' if call['out'] else 'From'} {contact["name"]} at {FormateTime(time)}"
 	
 	def OnRepeatCall(n):
-		global callingNumber
-		callingNumber = n
-		interface.MakeCall(n)
-		CallPage()
+		if Call(n):
+			CallPage()
 		
 	button = tk.Button(messagingFrame, bg='white', text=text, font=("Arial", 16), width=30, foreground=color, relief='flat', command = lambda: OnRepeatCall(call['number']))
 	button.pack(fill='x')
@@ -113,12 +132,10 @@ for i in range(len(history) - 1, 0, -1):
 	CreateHistoryBlock(history[i])
 	
 def OnNumpadClick(char):
-	global callingNumber
 	if char == "#":
-		callingNumber = number.get()
-		interface.MakeCall(number.get())
-		CallPage()
-		number.set("")
+		if Call(number.get()):
+			CallPage()
+			number.set("")
 	elif char == "X":
 		number.set(number.get()[:-1])
 	else:

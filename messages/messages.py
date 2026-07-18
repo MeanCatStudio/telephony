@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 from datetime import datetime
 from collections import deque
 import json
@@ -52,6 +53,14 @@ tk.Button(bottomFrame, text="update contact", font=("Arial", 16), command=lambda
 canvasBorder.pack(side='left', fill='both', expand=True)
 scrollbar.pack(side='right', fill='y')
 canvas.pack(side='left', fill='both', expand=True)
+
+def SetTitleOnState(state):
+	root.title("Messages" if state == "cconnected" else "Messages - NOT CONNECTED")
+SetTitleOnState(interface.GetStatus())
+bus.add_signal_receiver(
+	SetTitleOnState,
+	signal_name="OnStateChange",
+	dbus_interface="usr.telephony")
 
 def HasRead(number):
 	if len(messages[number]) > 0:
@@ -152,7 +161,13 @@ def CreateChatWindow(contact, messages):
 	
 	text = tk.StringVar()
 	def Send():
-		interface.SendMessage(activeNumber, text.get())
+		try:
+			success, message = interface.SendMessage(activeNumber, text.get())
+		except dbus.exceptions.DBusException as e:
+			success = False
+			message = f"{e}"
+		if not success:
+			messagebox.showwarning("!!!", f"Failed to send message. \nError: {message}")
 	
 	entryFrame = tk.Frame(openedWindow, bg='white')
 	entryFrame.pack(side='bottom', fill='x')
@@ -185,7 +200,6 @@ def CreateChatWindow(contact, messages):
 		CreateMessageBlock(chatFrame, messages[i])
 		prev = messages[i]
 		
-	
 	interface.MarkRead(activeNumber)	
 	if len(messages) > 0:
 		messages[-1]["read"] = True
@@ -204,7 +218,14 @@ def CreateNewMessageWindow():
 	
 	number = tk.StringVar(value="number")
 	def Send():
-		interface.SendMessage(number.get(), text.get('1.0', '1.end'))
+		try:
+			success, message = interface.SendMessage(number.get(), text.get('1.0', '1.end'))
+		except dbus.exceptions.DBusException as e:
+			success = False
+			message = f"{e}"
+		if not success:
+			messagebox.showwarning("!!!", f"Failed to send message. \nError: {message}")
+			return
 		ResetOpenedWindow()
 	
 	tk.Entry(openedWindow, font=("Arial", 24), justify="left", bd=10, relief='ridge', textvariable=number).pack(fill="x")

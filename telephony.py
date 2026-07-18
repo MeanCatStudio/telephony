@@ -17,11 +17,33 @@ sessionBus = dbus.SessionBus()
 
 SMS.Initalize(systemBus)
 call.Initalize(systemBus)
-notify.Initalize(sessionBus, SMS, call)
 
 MESSAGES_PATH = 'texts/messages'
 CALLS_PATH = 'calls/history'
 CONTACTS_PATH = 'contacts'
+
+MODEM_STATES = [
+	'failed',
+	'unknown',
+	'initalizing',
+	'locked',
+	'disabled',
+	'enabling',
+	'enabled',
+	'searching',
+	'registered',
+	'disconnectinng',
+	'connecting',
+	'connected',
+	'failed' # sometimes the state will be -1 which means failed
+]
+
+modem = systemBus.get_object(
+	"org.freedesktop.ModemManager1",
+	"/org/freedesktop/ModemManager1/Modem/0")
+modemIface = dbus.Interface(
+	modem,
+	"org.freedesktop.DBus.Properties")
 
 def StoreMessage(message):
 	path = MESSAGES_PATH + f"/{message['number']}"
@@ -38,27 +60,52 @@ def StoreCalls(details):
 	daemon.NewIncomingCall(json.dumps(details))
 call.SubscribeCalls(StoreCalls)
 
-def OnStatesChange(state):
+def OnCallStateChange(state):
 	daemon.CallStateUpdate(state)
 	if state == "active":
 		calls = data.Read(CALLS_PATH)
 		data.Write(CALLS_PATH + f"/{len(calls) - 1}/answered", True)
-call.SubscribeStates(OnStatesChange)
+call.SubscribeStates(OnCallStateChange)
+
+def OnModemStateChange(old, new, reason):
+	daemon.OnStateChange(new)
+	
+systemBus.add_signal_receiver(
+	OnModemStateChange,
+	signal_name="StateChanged",
+	dbus_interface="org.freedesktop.ModemManager1.Modem")
+
+class InvalidArguments(dbus.DBusException):
+	_dbus_error_name = 'usr.telephony.InvalidArugments'
+	
+class ModemUnavailable(dbus.DBusException):
+	_dbus_error_name = 'usr.telephony.ModemUnavailable'
 
 class Daemon(dbus.service.Object):
 	def __init__(self, bus):
 		super().__init__(bus, "/usr/telephony")
 		print("registered!")
 	
+	@dbus.service.method("usr.telephony")
+	def GetStatus(self):
+		return MODEM_STATES[modemIface.Get("org.freedesktop.ModemManager1.Modem", "State")]
+		
+	@dbus.service.signal("usr.telephony", signature="s")
+	def OnStateChange(self, state):
+		pass
+		
+	@dbus.service.signal("usr.telephony", signature="s")
+	def SMSAdded(self, message):
+		pass
 	
 	@dbus.service.signal("usr.telephony", signature="s")
 	def SMSAdded(self, message):
 		pass
 		
-	@dbus.service.method("usr.telephony")
+	@dbus.service.method("usr.telephony", signature="ss")
 	def UpdateContact(self, number, name):
 		if not number.isdigit():
-			return
+			raise InvalidArguments("Provided arguments are invalid!")
 		
 		contact = {
 			'number': number,
@@ -76,8 +123,8 @@ class Daemon(dbus.service.Object):
 		messages = data.Read(MESSAGES_PATH + f"/{number}")
 		if messages == None:
 			return json.dumps(None)
-		assert abs(start) > 0, "start and end prams are invalid"
-		assert end >= start, "start and end prams are invalid"
+		if abs(start) <= 0 or end < start:
+			raise InvalidArguments("Start and End prams are invalid!")
 		
 		start = -min(abs(start), len(messages))
 		end = -min(abs(end), len(messages))
@@ -96,6 +143,11 @@ class Daemon(dbus.service.Object):
 	
 	@dbus.service.method("usr.telephony", in_signaure="ss")
 	def SendMessage(self, number, text):
+		if not number.isdigit():
+			raise InvalidArguments("Provided arguments are invalid!")
+		if self.GetStatus() != 'connected':
+			return False, 'Modem has not connected to netork'
+			
 		SMS.SendMessage(number, text)
 		message = {
 			"number": f"{number}",
@@ -105,10 +157,17 @@ class Daemon(dbus.service.Object):
 			"read": True
 		}
 		StoreMessage(message)
+		return True, ''
 			
-	@dbus.service.method("usr.telephony")
+	@dbus.service.method("usr.telephony", signature='s')
 	def MarkRead(self, number):
+		if not number.isdigit():
+			raise InvalidArguments(f"Provided arguments are invalid!")
+			
 		messages = data.Read(MESSAGES_PATH + f"/{number}")
+		if messages == None:
+			raise InvalidArguments("Provided number does not have messsages!")
+		
 		for i in range(len(messages) - 1, 0, -1):
 			if messages[i]["read"]:
 				break
@@ -122,16 +181,28 @@ class Daemon(dbus.service.Object):
 	def CallStateUpdate(self, state):
 		pass
 		
-	@dbus.service.method("usr.telephony")
+	@dbus.service.method("usr.telephony", signature="s")
 	def MakeCall(self, number):
+		if not number.isdigit():
+			raise InvalidArguments("Provided number is invalid!")
+		if self.GetStatus() != 'connected':
+			return False, 'Modem has not connected to netork'
+			
 		call.MakeCall(number)
+		return True, ''
 		
 	@dbus.service.method("usr.telephony")
 	def Answer(self):
+		if self.GetStatus() != 'connected':
+			return False, 'Modem has not connected to netork'
+			
 		call.Answer()
 		
 	@dbus.service.method("usr.telephony")
 	def HangUp(self):
+		if self.GetStatus() != 'connected':
+			return False, 'Modem has not connected to netork'
+			
 		call.HangUp()
 		
 	@dbus.service.method("usr.telephony", out_signature="ss")
@@ -144,8 +215,9 @@ class Daemon(dbus.service.Object):
 	@dbus.service.method("usr.telephony", out_signaure="s")
 	def GetCallHistory(self, start, end):
 		calls = data.Read(CALLS_PATH)
-		assert abs(start) > 0, "start and end prams are invalid"
-		assert end >= start, "start and end prams are invalid"
+		
+		if abs(start) <= 0 or end < start:
+			raise InvalidArguments("Start and End prams are invalid!")
 		
 		start = -min(abs(start), len(calls))
 		end = -min(abs(end), len(calls))
@@ -155,6 +227,7 @@ class Daemon(dbus.service.Object):
 name = dbus.service.BusName("usr.telephony", sessionBus)
 
 daemon = Daemon(sessionBus)
+notify.Initalize(sessionBus, SMS, call)
 
 loop = GLib.MainLoop()
 loop.run()

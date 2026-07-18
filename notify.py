@@ -82,6 +82,21 @@ def Initalize(sessionBus, SMS, TheCallsTM):
 			CallRing(details["number"])
 	call.SubscribeCalls(OnNewCall)
 	call.SubscribeStates(OnCallStatusUpdate)
+	
+	def OnStateChange(state):
+		SendNotification(f'Modem State Updated: {state}', '')
+	
+	telephony = bus.get_object(
+		"usr.telephony",
+		"/usr/telephony")	
+	interface = dbus.Interface(
+		telephony,
+		"usr.telephony")
+	bus.add_signal_receiver(
+		OnStateChange,
+		signal_name="OnStateChange",
+		dbus_interface="usr.telephony")
+		
 		
 if __name__ == "__main__":
 	dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
